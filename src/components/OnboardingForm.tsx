@@ -46,7 +46,7 @@ const userProfileSchema = z.object({
 type UserProfile = z.infer<typeof userProfileSchema>;
 
 export default function OnboardingForm() {
-  const mutation = useMutation<UserProfile, Error, UserProfile>({
+  const mutation = useMutation({
     mutationFn: async (data: UserProfile) => {
       const { data: result, error } = await supabase
         .from("user_profiles")
