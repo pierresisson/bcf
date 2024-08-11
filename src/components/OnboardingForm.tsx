@@ -1,5 +1,4 @@
-"use client";
-
+import React from 'react';
 import { useMutation } from "@tanstack/react-query";
 import { z } from "zod";
 import { useForm } from "@tanstack/react-form";
@@ -7,57 +6,52 @@ import { supabase } from "../lib/supabaseClient";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { CheckboxGroup, CheckboxGroupItem } from "@/components/ui/checkbox";
 
 const userProfileSchema = z.object({
-  id: z.string().uuid().optional(),
-  user_id: z.string().uuid().optional(),
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
   age: z
     .number()
-    .int()
     .min(18, "Vous devez avoir au moins 18 ans")
     .max(120, "Âge invalide"),
   occupation: z
     .string()
     .min(2, "L'occupation doit contenir au moins 2 caractères"),
-  living_arrangement: z.enum(["Appartement", "Maison", "Colocation", "Autre"]),
-  family_status: z.enum([
+  livingArrangement: z.enum(["Appartement", "Maison", "Colocation", "Autre"]),
+  familyStatus: z.enum([
     "Célibataire",
     "En couple",
     "Marié(e)",
     "Avec enfants",
   ]),
-  wake_up_time: z
+  wakeUpTime: z
     .string()
     .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Format d'heure invalide"),
-  sleep_time: z
+  sleepTime: z
     .string()
     .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Format d'heure invalide"),
-  work_hours: z.string(),
-  diet_preference: z.enum(["Omnivore", "Végétarien", "Végétalien", "Autre"]),
+  workHours: z.string(),
+  dietPreference: z.enum(["Omnivore", "Végétarien", "Végétalien", "Autre"]),
   hobbies: z.string(),
-  sports_activities: z.array(z.string()),
-  health_goal: z.string(),
-  career_goal: z.string(),
-  personal_goal: z.string(),
-  created_at: z.string().datetime().optional(),
-  updated_at: z.string().datetime().optional(),
+  sportsActivities: z.array(z.string()),
+  healthGoal: z.string(),
+  careerGoal: z.string(),
+  personalGoal: z.string(),
 });
 
 type UserProfile = z.infer<typeof userProfileSchema>;
 
 export default function OnboardingForm() {
-  const mutation = useMutation({
+  const mutation = useMutation<UserProfile[], Error, UserProfile>({
     mutationFn: async (data: UserProfile) => {
       const { data: result, error } = await supabase
-        .from("user_profiles")
+        .from<UserProfile>("user_profiles")
         .upsert({
           ...data,
           user_id: (await supabase.auth.getUser()).data.user?.id,
-        })
-        .select()
-        .single();
+        });
 
       if (error) throw error;
 
@@ -65,7 +59,7 @@ export default function OnboardingForm() {
         throw new Error("No data returned from Supabase");
       }
 
-      return result as UserProfile;
+      return result[0];
     },
     onSuccess: () => {
       // Handle success (e.g., redirect or show notification)
@@ -77,17 +71,17 @@ export default function OnboardingForm() {
       name: "",
       age: 18,
       occupation: "",
-      living_arrangement: "Appartement",
-      family_status: "Célibataire",
-      wake_up_time: "",
-      sleep_time: "",
-      work_hours: "",
-      diet_preference: "Omnivore",
+      livingArrangement: "Appartement",
+      familyStatus: "Célibataire",
+      wakeUpTime: "",
+      sleepTime: "",
+      workHours: "",
+      dietPreference: "Omnivore",
       hobbies: "",
-      sports_activities: [],
-      health_goal: "",
-      career_goal: "",
-      personal_goal: "",
+      sportsActivities: [],
+      healthGoal: "",
+      careerGoal: "",
+      personalGoal: "",
     },
     onSubmit: async (values) => {
       const validatedData = userProfileSchema.parse(values);
@@ -127,10 +121,7 @@ export default function OnboardingForm() {
       >
         {(field) => (
           <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
               Nom complet
             </label>
             <Input
@@ -162,10 +153,7 @@ export default function OnboardingForm() {
       >
         {(field) => (
           <div>
-            <label
-              htmlFor="age"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
+            <label htmlFor="age" className="block text-sm font-medium text-gray-700 mb-1">
               Âge
             </label>
             <Input
@@ -173,9 +161,7 @@ export default function OnboardingForm() {
               type="number"
               value={field.state.value}
               onBlur={field.handleBlur}
-              onChange={(event) =>
-                field.handleChange(Number(event.target.value))
-              }
+              onChange={(event) => field.handleChange(Number(event.target.value))}
               min={18}
               max={120}
             />
@@ -188,13 +174,242 @@ export default function OnboardingForm() {
         )}
       </form.Field>
 
-      <Button
-        type="submit"
-        disabled={mutation.isPending || form.state.isSubmitting}
-        className="w-full"
+      <form.Field
+        name="occupation"
+        validators={{
+          onChange: (field) => {
+            if (typeof field.value !== "string")
+              return "L'occupation doit être une chaîne de caractères";
+            if (field.value.length < 2)
+              return "L'occupation doit contenir au moins 2 caractères";
+          },
+        }}
       >
-        {mutation.isPending ? "Enregistrement..." : "Enregistrer le profil"}
-      </Button>
-    </form>
-  );
-}
+        {(field) => (
+          <div>
+            <label htmlFor="occupation" className="block text-sm font-medium text-gray-700 mb-1">
+              Occupation
+            </label>
+            <Input
+              id="occupation"
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(e) => field.handleChange(e.target.value)}
+              placeholder="Votre occupation"
+            />
+            {field.state.meta.errors ? (
+              <p className="mt-1 text-sm text-red-600">
+                {field.state.meta.errors.join(", ")}
+              </p>
+            ) : null}
+          </div>
+        )}
+      </form.Field>
+
+      <form.Field name="livingArrangement">
+        {(field) => (
+          <div>
+            <label htmlFor="livingArrangement" className="block text-sm font-medium text-gray-700 mb-1">
+              Arrangement de vie
+            </label>
+            <Select
+              value={field.state.value}
+              onValueChange={field.handleChange}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Choisissez votre arrangement de vie" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Appartement">Appartement</SelectItem>
+                <SelectItem value="Maison">Maison</SelectItem>
+                <SelectItem value="Colocation">Colocation</SelectItem>
+                <SelectItem value="Autre">Autre</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+      </form.Field>
+
+      <form.Field name="familyStatus">
+        {(field) => (
+          <div>
+            <label htmlFor="familyStatus" className="block text-sm font-medium text-gray-700 mb-1">
+              Statut familial
+            </label>
+            <Select
+              value={field.state.value}
+              onValueChange={field.handleChange}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Choisissez votre statut familial" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Célibataire">Célibataire</SelectItem>
+                <SelectItem value="En couple">En couple</SelectItem>
+                <SelectItem value="Marié(e)">Marié(e)</SelectItem>
+                <SelectItem value="Avec enfants">Avec enfants</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+      </form.Field>
+
+      <form.Field
+        name="wakeUpTime"
+        validators={{
+          onChange: (field) => {
+            if (!/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(field.value))
+              return "Format d'heure invalide";
+          },
+        }}
+      >
+        {(field) => (
+          <div>
+            <label htmlFor="wakeUpTime" className="block text-sm font-medium text-gray-700 mb-1">
+              Heure de réveil
+            </label>
+            <Input
+              id="wakeUpTime"
+              type="time"
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(e) => field.handleChange(e.target.value)}
+            />
+            {field.state.meta.errors ? (
+              <p className="mt-1 text-sm text-red-600">
+                {field.state.meta.errors.join(", ")}
+              </p>
+            ) : null}
+          </div>
+        )}
+      </form.Field>
+
+      <form.Field
+        name="sleepTime"
+        validators={{
+          onChange: (field) => {
+            if (!/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(field.value))
+              return "Format d'heure invalide";
+          },
+        }}
+      >
+        {(field) => (
+          <div>
+            <label htmlFor="sleepTime" className="block text-sm font-medium text-gray-700 mb-1">
+              Heure de coucher
+            </label>
+            <Input
+              id="sleepTime"
+              type="time"
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(e) => field.handleChange(e.target.value)}
+            />
+            {field.state.meta.errors ? (
+              <p className="mt-1 text-sm text-red-600">
+                {field.state.meta.errors.join(", ")}
+              </p>
+            ) : null}
+          </div>
+        )}
+      </form.Field>
+
+      <form.Field name="workHours">
+        {(field) => (
+          <div>
+            <label htmlFor="workHours" className="block text-sm font-medium text-gray-700 mb-1">
+              Heures de travail
+            </label>
+            <Input
+              id="workHours"
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(e) => field.handleChange(e.target.value)}
+              placeholder="Ex: 9h-17h"
+            />
+          </div>
+        )}
+      </form.Field>
+
+      <form.Field name="dietPreference">
+        {(field) => (
+          <div>
+            <label htmlFor="dietPreference" className="block text-sm font-medium text-gray-700 mb-1">
+              Préférence alimentaire
+            </label>
+            <Select
+              value={field.state.value}
+              onValueChange={field.handleChange}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Choisissez votre préférence alimentaire" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Omnivore">Omnivore</SelectItem>
+                <SelectItem value="Végétarien">Végétarien</SelectItem>
+                <SelectItem value="Végétalien">Végétalien</SelectItem>
+                <SelectItem value="Autre">Autre</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+      </form.Field>
+
+      <form.Field name="hobbies">
+        {(field) => (
+          <div>
+            <label htmlFor="hobbies" className="block text-sm font-medium text-gray-700 mb-1">
+              Loisirs
+            </label>
+            <Textarea
+              id="hobbies"
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(e) => field.handleChange(e.target.value)}
+              placeholder="Décrivez vos loisirs"
+            />
+          </div>
+        )}
+      </form.Field>
+
+      <form.Field name="sportsActivities">
+        {(field) => (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Activités sportives
+            </label>
+            <CheckboxGroup
+              onValueChange={(value) => field.handleChange(value)}
+              value={field.state.value}
+            >
+              <CheckboxGroupItem value="Running" id="running">
+                Running
+              </CheckboxGroupItem>
+              <CheckboxGroupItem value="Yoga" id="yoga">
+                Yoga
+              </CheckboxGroupItem>
+              <CheckboxGroupItem value="Musculation" id="weightlifting">
+                Musculation
+              </CheckboxGroupItem>
+              <CheckboxGroupItem value="Natation" id="swimming">
+                Natation
+              </CheckboxGroupItem>
+              <CheckboxGroupItem value="Autre" id="other">
+                Autre
+              </CheckboxGroupItem>
+            </CheckboxGroup>
+          </div>
+        )}
+      </form.Field>
+
+      <form.Field name="healthGoal">
+        {(field) => (
+          <div>
+            <label htmlFor="healthGoal" className="block text-sm font-medium text-gray-700 mb-1">
+              Objectif de santé
+            </label>
+            <Textarea
+              id="healthGoal"
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange
