@@ -51,7 +51,7 @@ const userProfileSchema = z.object({
 
 type UserProfile = z.infer<typeof userProfileSchema>;
 
-export default function OnboardingForm() {
+export default function ProfileForm() {
   const form = useForm<UserProfile>({
     defaultValues: {
       name: '',
