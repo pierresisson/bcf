@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint && tsc --noEmit && eslint . --ext .ts,.tsx"
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit && eslint . --ext .ts,.tsx",
+    "format": "prettier --write .",
+    "lintfix": "tsc --noEmit && eslint . --ext .ts,.tsx && prettier --write ."
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.1.1",
@@ -32,7 +35,10 @@
     "@types/react-dom": "^18",
     "eslint": "^8",
     "eslint-config-next": "14.2.5",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
     "postcss": "^8",
+    "prettier": "^3.3.3",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   }

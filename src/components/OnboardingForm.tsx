@@ -1,30 +1,36 @@
 import React from 'react';
-import { useMutation } from "@tanstack/react-query";
-import { z } from "zod";
-import { useForm } from "@tanstack/react-form";
-import { supabase } from "../lib/supabaseClient";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { CheckboxGroup, CheckboxGroupItem } from "@/components/ui/checkbox";
+import { useMutation } from '@tanstack/react-query';
+import { z } from 'zod';
+import { useForm } from '@tanstack/react-form';
+import { supabase } from '../lib/supabaseClient';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const userProfileSchema = z.object({
-  name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
+  name: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
   age: z
     .number()
-    .min(18, "Vous devez avoir au moins 18 ans")
-    .max(120, "Âge invalide"),
+    .min(18, 'Vous devez avoir au moins 18 ans')
+    .max(120, 'Âge invalide'),
   occupation: z
     .string()
     .min(2, "L'occupation doit contenir au moins 2 caractères"),
-  livingArrangement: z.enum(["Appartement", "Maison", "Colocation", "Autre"]),
+  livingArrangement: z.enum(['Appartement', 'Maison', 'Colocation', 'Autre']),
   familyStatus: z.enum([
-    "Célibataire",
-    "En couple",
-    "Marié(e)",
-    "Avec enfants",
+    'Célibataire',
+    'En couple',
+    'Marié(e)',
+    'Avec enfants',
   ]),
   wakeUpTime: z
     .string()
@@ -33,7 +39,7 @@ const userProfileSchema = z.object({
     .string()
     .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Format d'heure invalide"),
   workHours: z.string(),
-  dietPreference: z.enum(["Omnivore", "Végétarien", "Végétalien", "Autre"]),
+  dietPreference: z.enum(['Omnivore', 'Végétarien', 'Végétalien', 'Autre']),
   hobbies: z.string(),
   sportsActivities: z.array(z.string()),
   healthGoal: z.string(),
@@ -47,7 +53,7 @@ export default function OnboardingForm() {
   const mutation = useMutation<UserProfile[], Error, UserProfile>({
     mutationFn: async (data: UserProfile) => {
       const { data: result, error } = await supabase
-        .from<UserProfile>("user_profiles")
+        .from<UserProfile>('user_profiles')
         .upsert({
           ...data,
           user_id: (await supabase.auth.getUser()).data.user?.id,
@@ -56,7 +62,7 @@ export default function OnboardingForm() {
       if (error) throw error;
 
       if (!result) {
-        throw new Error("No data returned from Supabase");
+        throw new Error('No data returned from Supabase');
       }
 
       return result[0];
@@ -68,20 +74,20 @@ export default function OnboardingForm() {
 
   const form = useForm<UserProfile>({
     defaultValues: {
-      name: "",
+      name: '',
       age: 18,
-      occupation: "",
-      livingArrangement: "Appartement",
-      familyStatus: "Célibataire",
-      wakeUpTime: "",
-      sleepTime: "",
-      workHours: "",
-      dietPreference: "Omnivore",
-      hobbies: "",
+      occupation: '',
+      livingArrangement: 'Appartement',
+      familyStatus: 'Célibataire',
+      wakeUpTime: '',
+      sleepTime: '',
+      workHours: '',
+      dietPreference: 'Omnivore',
+      hobbies: '',
       sportsActivities: [],
-      healthGoal: "",
-      careerGoal: "",
-      personalGoal: "",
+      healthGoal: '',
+      careerGoal: '',
+      personalGoal: '',
     },
     onSubmit: async (values) => {
       const validatedData = userProfileSchema.parse(values);
@@ -112,16 +118,19 @@ export default function OnboardingForm() {
         name="name"
         validators={{
           onChange: (field) => {
-            if (typeof field.value !== "string")
-              return "Le nom doit être une chaîne de caractères";
+            if (typeof field.value !== 'string')
+              return 'Le nom doit être une chaîne de caractères';
             if (field.value.length < 2)
-              return "Le nom doit contenir au moins 2 caractères";
+              return 'Le nom doit contenir au moins 2 caractères';
           },
         }}
       >
         {(field) => (
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Nom complet
             </label>
             <Input
@@ -133,7 +142,7 @@ export default function OnboardingForm() {
             />
             {field.state.meta.errors ? (
               <p className="mt-1 text-sm text-red-600">
-                {field.state.meta.errors.join(", ")}
+                {field.state.meta.errors.join(', ')}
               </p>
             ) : null}
           </div>
@@ -144,16 +153,19 @@ export default function OnboardingForm() {
         name="age"
         validators={{
           onChange: (field) => {
-            if (typeof field.value !== "number")
+            if (typeof field.value !== 'number')
               return "L'âge doit être un nombre";
-            if (field.value < 18) return "Vous devez avoir au moins 18 ans";
-            if (field.value > 120) return "Âge invalide";
+            if (field.value < 18) return 'Vous devez avoir au moins 18 ans';
+            if (field.value > 120) return 'Âge invalide';
           },
         }}
       >
         {(field) => (
           <div>
-            <label htmlFor="age" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="age"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Âge
             </label>
             <Input
@@ -161,13 +173,15 @@ export default function OnboardingForm() {
               type="number"
               value={field.state.value}
               onBlur={field.handleBlur}
-              onChange={(event) => field.handleChange(Number(event.target.value))}
+              onChange={(event) =>
+                field.handleChange(Number(event.target.value))
+              }
               min={18}
               max={120}
             />
             {field.state.meta.errors ? (
               <p className="mt-1 text-sm text-red-600">
-                {field.state.meta.errors.join(", ")}
+                {field.state.meta.errors.join(', ')}
               </p>
             ) : null}
           </div>
@@ -178,7 +192,7 @@ export default function OnboardingForm() {
         name="occupation"
         validators={{
           onChange: (field) => {
-            if (typeof field.value !== "string")
+            if (typeof field.value !== 'string')
               return "L'occupation doit être une chaîne de caractères";
             if (field.value.length < 2)
               return "L'occupation doit contenir au moins 2 caractères";
@@ -187,7 +201,10 @@ export default function OnboardingForm() {
       >
         {(field) => (
           <div>
-            <label htmlFor="occupation" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="occupation"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Occupation
             </label>
             <Input
@@ -199,7 +216,7 @@ export default function OnboardingForm() {
             />
             {field.state.meta.errors ? (
               <p className="mt-1 text-sm text-red-600">
-                {field.state.meta.errors.join(", ")}
+                {field.state.meta.errors.join(', ')}
               </p>
             ) : null}
           </div>
@@ -209,7 +226,10 @@ export default function OnboardingForm() {
       <form.Field name="livingArrangement">
         {(field) => (
           <div>
-            <label htmlFor="livingArrangement" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="livingArrangement"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Arrangement de vie
             </label>
             <Select
@@ -233,7 +253,10 @@ export default function OnboardingForm() {
       <form.Field name="familyStatus">
         {(field) => (
           <div>
-            <label htmlFor="familyStatus" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="familyStatus"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Statut familial
             </label>
             <Select
@@ -265,7 +288,10 @@ export default function OnboardingForm() {
       >
         {(field) => (
           <div>
-            <label htmlFor="wakeUpTime" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="wakeUpTime"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Heure de réveil
             </label>
             <Input
@@ -277,7 +303,7 @@ export default function OnboardingForm() {
             />
             {field.state.meta.errors ? (
               <p className="mt-1 text-sm text-red-600">
-                {field.state.meta.errors.join(", ")}
+                {field.state.meta.errors.join(', ')}
               </p>
             ) : null}
           </div>
@@ -295,7 +321,10 @@ export default function OnboardingForm() {
       >
         {(field) => (
           <div>
-            <label htmlFor="sleepTime" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="sleepTime"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Heure de coucher
             </label>
             <Input
@@ -307,7 +336,7 @@ export default function OnboardingForm() {
             />
             {field.state.meta.errors ? (
               <p className="mt-1 text-sm text-red-600">
-                {field.state.meta.errors.join(", ")}
+                {field.state.meta.errors.join(', ')}
               </p>
             ) : null}
           </div>
@@ -317,7 +346,10 @@ export default function OnboardingForm() {
       <form.Field name="workHours">
         {(field) => (
           <div>
-            <label htmlFor="workHours" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="workHours"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Heures de travail
             </label>
             <Input
@@ -334,7 +366,10 @@ export default function OnboardingForm() {
       <form.Field name="dietPreference">
         {(field) => (
           <div>
-            <label htmlFor="dietPreference" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="dietPreference"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Préférence alimentaire
             </label>
             <Select
@@ -358,7 +393,10 @@ export default function OnboardingForm() {
       <form.Field name="hobbies">
         {(field) => (
           <div>
-            <label htmlFor="hobbies" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="hobbies"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Loisirs
             </label>
             <Textarea
@@ -378,26 +416,30 @@ export default function OnboardingForm() {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Activités sportives
             </label>
-            <CheckboxGroup
-              onValueChange={(value) => field.handleChange(value)}
-              value={field.state.value}
-            >
-              <CheckboxGroupItem value="Running" id="running">
-                Running
-              </CheckboxGroupItem>
-              <CheckboxGroupItem value="Yoga" id="yoga">
-                Yoga
-              </CheckboxGroupItem>
-              <CheckboxGroupItem value="Musculation" id="weightlifting">
-                Musculation
-              </CheckboxGroupItem>
-              <CheckboxGroupItem value="Natation" id="swimming">
-                Natation
-              </CheckboxGroupItem>
-              <CheckboxGroupItem value="Autre" id="other">
-                Autre
-              </CheckboxGroupItem>
-            </CheckboxGroup>
+            <div className="space-y-2">
+              {['Running', 'Yoga', 'Musculation', 'Natation', 'Autre'].map(
+                (activity) => (
+                  <div key={activity} className="flex items-center">
+                    <Checkbox
+                      id={activity.toLowerCase()}
+                      checked={field.state.value.includes(activity)}
+                      onCheckedChange={(checked) => {
+                        const updatedActivities = checked
+                          ? [...field.state.value, activity]
+                          : field.state.value.filter((a) => a !== activity);
+                        field.handleChange(updatedActivities);
+                      }}
+                    />
+                    <label
+                      htmlFor={activity.toLowerCase()}
+                      className="ml-2 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      {activity}
+                    </label>
+                  </div>
+                ),
+              )}
+            </div>
           </div>
         )}
       </form.Field>
@@ -405,11 +447,70 @@ export default function OnboardingForm() {
       <form.Field name="healthGoal">
         {(field) => (
           <div>
-            <label htmlFor="healthGoal" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="healthGoal"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Objectif de santé
             </label>
             <Textarea
               id="healthGoal"
               value={field.state.value}
               onBlur={field.handleBlur}
-              onChange
+              onChange={(e) => field.handleChange(e.target.value)}
+              placeholder="Décrivez votre objectif de santé"
+            />
+          </div>
+        )}
+      </form.Field>
+
+      <form.Field name="careerGoal">
+        {(field) => (
+          <div>
+            <label
+              htmlFor="careerGoal"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Objectif de carrière
+            </label>
+            <Textarea
+              id="careerGoal"
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(e) => field.handleChange(e.target.value)}
+              placeholder="Décrivez votre objectif de carrière"
+            />
+          </div>
+        )}
+      </form.Field>
+
+      <form.Field name="personalGoal">
+        {(field) => (
+          <div>
+            <label
+              htmlFor="personalGoal"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Objectif personnel
+            </label>
+            <Textarea
+              id="personalGoal"
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(e) => field.handleChange(e.target.value)}
+              placeholder="Décrivez votre objectif personnel"
+            />
+          </div>
+        )}
+      </form.Field>
+
+      <Button
+        type="submit"
+        disabled={mutation.isPending || form.state.isSubmitting}
+        className="w-full"
+      >
+        {mutation.isPending ? 'Enregistrement...' : 'Enregistrer le profil'}
+      </Button>
+    </form>
+  );
+}
