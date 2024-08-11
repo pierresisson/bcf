@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { z } from 'zod';
@@ -50,6 +52,8 @@ const userProfileSchema = z.object({
 type UserProfile = z.infer<typeof userProfileSchema>;
 
 export default function OnboardingForm() {
+  console.log('SUPABASE_URL:', process.env.SUPABASE_URL);
+  console.log('SUPABASE_ANON_KEY:', process.env.SUPABASE_ANON_KEY);
   const mutation = useMutation<UserProfile[], Error, UserProfile>({
     mutationFn: async (data: UserProfile) => {
       const { data: result, error } = await supabase
@@ -234,7 +238,9 @@ export default function OnboardingForm() {
             </label>
             <Select
               value={field.state.value}
-              onValueChange={field.handleChange}
+              onValueChange={(
+                value: 'Appartement' | 'Maison' | 'Colocation' | 'Autre',
+              ) => field.handleChange(value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Choisissez votre arrangement de vie" />
@@ -261,7 +267,13 @@ export default function OnboardingForm() {
             </label>
             <Select
               value={field.state.value}
-              onValueChange={field.handleChange}
+              onValueChange={(
+                value:
+                  | 'Célibataire'
+                  | 'En couple'
+                  | 'Marié(e)'
+                  | 'Avec enfants',
+              ) => field.handleChange(value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Choisissez votre statut familial" />
@@ -374,7 +386,9 @@ export default function OnboardingForm() {
             </label>
             <Select
               value={field.state.value}
-              onValueChange={field.handleChange}
+              onValueChange={(
+                value: 'Autre' | 'Omnivore' | 'Végétarien' | 'Végétalien',
+              ) => field.handleChange(value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Choisissez votre préférence alimentaire" />
