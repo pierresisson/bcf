@@ -5,6 +5,8 @@ import { z } from "zod";
 import { supabase } from "../lib/supabaseClient";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 
 const userProfileSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
@@ -39,7 +41,7 @@ const userProfileSchema = z.object({
 
 type UserProfile = z.infer<typeof userProfileSchema>;
 
-export default function OnboardingForm() {
+function OnboardingFormComponent() {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -82,50 +84,109 @@ export default function OnboardingForm() {
     },
   });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    void form.handleSubmit();
-  };
-
   return (
-    <FormProvider form={form}>
-      <form
-        onSubmit={handleSubmit}
-        className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md"
-      >
-        <h2 className="text-2xl font-bold mb-4">Profil Utilisateur</h2>
-        {mutation.isError && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertDescription>
-              Une erreur est survenue. Veuillez réessayer.
-            </AlertDescription>
-          </Alert>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        void form.handleSubmit();
+      }}
+      className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md space-y-6"
+    >
+      <h2 className="text-2xl font-bold mb-4">Profil Utilisateur</h2>
+
+      {mutation.isError && (
+        <Alert variant="destructive">
+          <AlertDescription>
+            Une erreur est survenue. Veuillez réessayer.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <div>
+        <label
+          htmlFor="name"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
+          Nom complet
+        </label>
+        <Input
+          {...form.getFieldProps("name")}
+          id="name"
+          placeholder="Votre nom complet"
+        />
+        {form.getFieldError("name") && (
+          <p className="mt-1 text-sm text-red-600">
+            {form.getFieldError("name")}
+          </p>
         )}
-        <div className="mb-4">
-          <label
-            htmlFor="name"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Nom complet
-          </label>
-          <input
-            {...form.getFieldProps("name")}
-            type="text"
-            id="name"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-          />
-          {form.getFieldError("name") && (
-            <p className="mt-1 text-sm text-red-600">
-              {form.getFieldError("name")}
-            </p>
-          )}
-        </div>
-        {/* Répétez ce pattern pour les autres champs */}
-        <Button type="submit" disabled={mutation.isLoading}>
-          {mutation.isLoading ? "Enregistrement..." : "Enregistrer le profil"}
-        </Button>
-      </form>
-    </FormProvider>
+      </div>
+
+      <div>
+        <label
+          htmlFor="age"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
+          Âge
+        </label>
+        <Input
+          {...form.getFieldProps("age")}
+          id="age"
+          type="number"
+          min={18}
+          max={120}
+        />
+        {form.getFieldError("age") && (
+          <p className="mt-1 text-sm text-red-600">
+            {form.getFieldError("age")}
+          </p>
+        )}
+      </div>
+
+      <div>
+        <label
+          htmlFor="occupation"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
+          Occupation
+        </label>
+        <Input
+          {...form.getFieldProps("occupation")}
+          id="occupation"
+          placeholder="Votre occupation"
+        />
+        {form.getFieldError("occupation") && (
+          <p className="mt-1 text-sm text-red-600">
+            {form.getFieldError("occupation")}
+          </p>
+        )}
+      </div>
+
+      <div>
+        <label
+          htmlFor="livingArrangement"
+          className="block text-sm font-medium text-gray-700 mb-1"
+        >
+          Type de logement
+        </label>
+        <Select
+          {...form.getFieldProps("livingArrangement")}
+          id="livingArrangement"
+        >
+          <option value="Appartement">Appartement</option>
+          <option value="Maison">Maison</option>
+          <option value="Colocation">Colocation</option>
+          <option value="Autre">Autre</option>
+        </Select>
+      </div>
+
+      {/* Ajoutez les champs restants de la même manière */}
+
+      <Button type="submit" disabled={mutation.isLoading} className="w-full">
+        {mutation.isLoading ? "Enregistrement..." : "Enregistrer le profil"}
+      </Button>
+    </form>
   );
 }
+
+export const OnboardingForm = memo(OnboardingFormComponent);
