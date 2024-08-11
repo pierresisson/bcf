@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import { useForm } from '@tanstack/react-form';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Alert } from '@/components/ui/alert';
@@ -35,6 +35,7 @@ export default function LoginPage() {
   const [formAction, setFormAction] = useState<FormAction>('login');
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [showDialog, setShowDialog] = useState<boolean>(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     // Check if the user is already logged in
@@ -42,6 +43,8 @@ export default function LoginPage() {
       const { data } = await supabase.auth.getSession();
       if (data.session) {
         setIsLoggedIn(true);
+        setUserId(data.session.user.id);
+        setShowDialog(true);
       }
     };
 
@@ -72,11 +75,18 @@ export default function LoginPage() {
     },
     onSuccess: async (userId) => {
       if (userId) {
+        setUserId(userId);
         const { data: profileData, error: profileError } = await supabase
           .from('user_profiles')
           .select('*')
           .eq('user_id', userId)
           .single();
+
+        if (profileError) {
+          console.error('Error fetching profile:', profileError);
+          router.push('/');
+          return;
+        }
 
         if (profileData) {
           setShowDialog(true);
@@ -125,6 +135,16 @@ export default function LoginPage() {
       console.error('Signup error:', error);
     },
   });
+
+  const logout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('Logout error:', error);
+    } else {
+      setIsLoggedIn(false);
+      router.push('/');
+    }
+  };
 
   return (
     <div className="p-4">
@@ -206,22 +226,19 @@ export default function LoginPage() {
         <Dialog open={showDialog} onOpenChange={setShowDialog}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Already Logged In</DialogTitle>
+              <DialogTitle>Profile Options</DialogTitle>
               <DialogDescription>
-                You are already logged in. Do you want to go to your profile
-                page?
+                You are already logged in. What would you like to do?
               </DialogDescription>
             </DialogHeader>
             <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => router.push(`/profile`)}>
-                Go to Profile
-              </Button>
               <Button
                 variant="outline"
-                onClick={() =>
-                  supabase.auth.signOut().then(() => setIsLoggedIn(false))
-                }
+                onClick={() => router.push(`/profile?userId=${userId}`)}
               >
+                Go to Profile
+              </Button>
+              <Button variant="outline" onClick={logout}>
                 Logout
               </Button>
             </div>
