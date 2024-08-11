@@ -1,16 +1,11 @@
 "use client";
 
-import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const inter = Inter({ subsets: ["latin"] });
-
-// export const metadata: Metadata = {
-//   title: "harmoiq",
-//   description: "let's start to use your personnal assistant!",
-// };
 
 const queryClient = new QueryClient();
 
@@ -24,6 +19,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <QueryClientProvider client={queryClient}>
           {children}
+          <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
       </body>
     </html>
