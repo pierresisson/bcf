@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import { useForm } from '@tanstack/react-form';
 import { useMutation } from '@tanstack/react-query';
+import { Alert } from '@/components/ui/alert';
 
 type FormData = {
   email: string;
@@ -39,9 +40,7 @@ export default function LoginPage() {
     onSuccess: () => {
       router.push('/');
     },
-    onError: (error) => {
-      console.error('Login error:', error);
-    },
+    onError: (error) => {},
   });
 
   const signupMutation = useMutation({
