@@ -60,14 +60,26 @@ export default function ProfileForm() {
   } = useForm<UserProfile>({
     resolver: zodResolver(userProfileSchema),
     defaultValues: {
-      // ... default values remain the same
+      name: '',
+      age: 18,
+      occupation: '',
+      livingArrangement: 'Appartement',
+      familyStatus: 'Célibataire',
+      wakeUpTime: '',
+      sleepTime: '',
+      workHours: '',
+      dietPreference: 'Omnivore',
+      hobbies: '',
+      sportsActivities: [],
+      healthGoal: '',
+      careerGoal: '',
+      personalGoal: '',
     },
   });
 
   const mutation = useMutation({
     mutationFn: async (data: UserProfile) => {
-      const { data: user, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
+      const { data: user } = await supabase.auth.getUser();
       if (!user.user?.id) {
         throw new Error('User not authenticated');
       }
@@ -100,21 +112,18 @@ export default function ProfileForm() {
 
       return result[0];
     },
-    onSuccess: (data) => {
-      console.log('Profile saved successfully', data);
+    onSuccess: () => {
+      console.log('Profile saved successfully');
     },
     onError: (error) => {
       console.error('Error saving profile:', error);
     },
   });
 
-  const onSubmit = async (data: UserProfile) => {
-    console.log('Form data:', data);
-    try {
-      await mutation.mutateAsync(data);
-    } catch (error) {
-      console.error('Mutation error:', error);
-    }
+  const onSubmit = (data: UserProfile) => {
+    console.log(data);
+    console.log(supabase.auth.getUser);
+    mutation.mutate(data);
   };
 
   return (
