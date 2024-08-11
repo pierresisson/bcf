@@ -53,7 +53,7 @@ export default function OnboardingForm() {
   const mutation = useMutation<UserProfile[], Error, UserProfile>({
     mutationFn: async (data: UserProfile) => {
       const { data: result, error } = await supabase
-        .from<UserProfile>('user_profiles')
+        .from('user_profiles')
         .upsert({
           ...data,
           user_id: (await supabase.auth.getUser()).data.user?.id,
