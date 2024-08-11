@@ -41,7 +41,7 @@ const userProfileSchema = z.object({
 
 type UserProfile = z.infer<typeof userProfileSchema>;
 
-function OnboardingFormComponent() {
+export default function OnboardingForm() {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -103,90 +103,88 @@ function OnboardingFormComponent() {
         </Alert>
       )}
 
-      <div>
-        <label
-          htmlFor="name"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
-          Nom complet
-        </label>
-        <Input
-          {...form.getFieldProps("name")}
-          id="name"
-          placeholder="Votre nom complet"
-        />
-        {form.getFieldError("name") && (
-          <p className="mt-1 text-sm text-red-600">
-            {form.getFieldError("name")}
-          </p>
+      <form.Field
+        name="name"
+        validators={{
+          onChange: ({ value }) => {
+            if (typeof value !== "string")
+              return "Le nom doit être une chaîne de caractères";
+            if (value.length < 2)
+              return "Le nom doit contenir au moins 2 caractères";
+          },
+        }}
+      >
+        {(field) => (
+          <div>
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Nom complet
+            </label>
+            <Input
+              id="name"
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(e) => field.handleChange(e.target.value)}
+              placeholder="Votre nom complet"
+            />
+            {field.state.meta.errors ? (
+              <p className="mt-1 text-sm text-red-600">
+                {field.state.meta.errors.join(", ")}
+              </p>
+            ) : null}
+          </div>
         )}
-      </div>
+      </form.Field>
 
-      <div>
-        <label
-          htmlFor="age"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
-          Âge
-        </label>
-        <Input
-          {...form.getFieldProps("age")}
-          id="age"
-          type="number"
-          min={18}
-          max={120}
-        />
-        {form.getFieldError("age") && (
-          <p className="mt-1 text-sm text-red-600">
-            {form.getFieldError("age")}
-          </p>
+      <form.Field
+        name="age"
+        validators={{
+          onChange: ({ value }) => {
+            if (typeof value !== "number") return "L'âge doit être un nombre";
+            if (value < 18) return "Vous devez avoir au moins 18 ans";
+            if (value > 120) return "Âge invalide";
+          },
+        }}
+      >
+        {(field) => (
+          <div>
+            <label
+              htmlFor="age"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Âge
+            </label>
+            <Input
+              id="age"
+              type="number"
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(event) =>
+                field.handleChange(Number(event.target.value))
+              }
+              min={18}
+              max={120}
+            />
+            {field.state.meta.errors ? (
+              <p className="mt-1 text-sm text-red-600">
+                {field.state.meta.errors.join(", ")}
+              </p>
+            ) : null}
+          </div>
         )}
-      </div>
-
-      <div>
-        <label
-          htmlFor="occupation"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
-          Occupation
-        </label>
-        <Input
-          {...form.getFieldProps("occupation")}
-          id="occupation"
-          placeholder="Votre occupation"
-        />
-        {form.getFieldError("occupation") && (
-          <p className="mt-1 text-sm text-red-600">
-            {form.getFieldError("occupation")}
-          </p>
-        )}
-      </div>
-
-      <div>
-        <label
-          htmlFor="livingArrangement"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
-          Type de logement
-        </label>
-        <Select
-          {...form.getFieldProps("livingArrangement")}
-          id="livingArrangement"
-        >
-          <option value="Appartement">Appartement</option>
-          <option value="Maison">Maison</option>
-          <option value="Colocation">Colocation</option>
-          <option value="Autre">Autre</option>
-        </Select>
-      </div>
+      </form.Field>
 
       {/* Ajoutez les champs restants de la même manière */}
 
-      <Button type="submit" disabled={mutation.isLoading} className="w-full">
-        {mutation.isLoading ? "Enregistrement..." : "Enregistrer le profil"}
+      <Button
+        type="submit"
+        disabled={mutation.isPending || form.state.isSubmitting}
+        className="w-full"
+      >
+        {mutation.isPending ? "Enregistrement..." : "Enregistrer le profil"}
       </Button>
     </form>
   );
 }
-
-export const OnboardingForm = memo(OnboardingFormComponent);
