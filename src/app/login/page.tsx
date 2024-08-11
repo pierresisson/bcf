@@ -8,6 +8,8 @@ import { useMutation } from '@tanstack/react-query';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Alert } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Invalid email address' }),
@@ -80,7 +82,7 @@ export default function LoginPage() {
               <form.Field name="email">
                 {(field) => (
                   <>
-                    <input
+                    <Input
                       type="email"
                       placeholder="Email"
                       name={field.name}
@@ -102,7 +104,7 @@ export default function LoginPage() {
               <form.Field name="password">
                 {(field) => (
                   <>
-                    <input
+                    <Input
                       type="password"
                       placeholder="Password"
                       name={field.name}
@@ -121,22 +123,21 @@ export default function LoginPage() {
               </form.Field>
             </div>
             <div className="flex space-x-2">
-              <button
+              <Button
                 type="submit"
                 onClick={() => setFormAction('login')}
-                className="px-4 py-2 bg-blue-500 text-white rounded"
                 disabled={loginMutation.isPending || form.state.isSubmitting}
               >
                 {loginMutation.isPending ? 'Logging in...' : 'Login'}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="outline"
                 type="submit"
                 onClick={() => setFormAction('signup')}
-                className="px-4 py-2 bg-green-500 text-white rounded"
                 disabled={signupMutation.isPending || form.state.isSubmitting}
               >
                 {signupMutation.isPending ? 'Signing up...' : 'Signup'}
-              </button>
+              </Button>
             </div>
           </form>
         )}
