@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.45.1",
     "@tanstack/react-form": "^0.29.0",
     "@tanstack/react-query": "^5.51.23",
     "class-variance-authority": "^0.7.0",
