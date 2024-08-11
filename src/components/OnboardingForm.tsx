@@ -1,7 +1,6 @@
-import { memo } from "react";
-import { useForm } from "@tanstack/react-form";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { z } from "zod";
+import { useForm } from "@tanstack/react-form";
 import { supabase } from "../lib/supabaseClient";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -42,9 +41,7 @@ const userProfileSchema = z.object({
 type UserProfile = z.infer<typeof userProfileSchema>;
 
 export default function OnboardingForm() {
-  const queryClient = useQueryClient();
-
-  const mutation = useMutation({
+  const mutation = useMutation<unknown, Error, UserProfile>({
     mutationFn: async (data: UserProfile) => {
       const { data: result, error } = await supabase
         .from("user_profiles")
@@ -56,7 +53,6 @@ export default function OnboardingForm() {
       return result;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["userProfile"] });
       // Redirection ou notification de succès ici
     },
   });
@@ -106,10 +102,10 @@ export default function OnboardingForm() {
       <form.Field
         name="name"
         validators={{
-          onChange: ({ value }) => {
-            if (typeof value !== "string")
+          onChange: (field) => {
+            if (typeof field.value !== "string")
               return "Le nom doit être une chaîne de caractères";
-            if (value.length < 2)
+            if (field.value.length < 2)
               return "Le nom doit contenir au moins 2 caractères";
           },
         }}
@@ -141,10 +137,11 @@ export default function OnboardingForm() {
       <form.Field
         name="age"
         validators={{
-          onChange: ({ value }) => {
-            if (typeof value !== "number") return "L'âge doit être un nombre";
-            if (value < 18) return "Vous devez avoir au moins 18 ans";
-            if (value > 120) return "Âge invalide";
+          onChange: (field) => {
+            if (typeof field.value !== "number")
+              return "L'âge doit être un nombre";
+            if (field.value < 18) return "Vous devez avoir au moins 18 ans";
+            if (field.value > 120) return "Âge invalide";
           },
         }}
       >
@@ -175,8 +172,6 @@ export default function OnboardingForm() {
           </div>
         )}
       </form.Field>
-
-      {/* Ajoutez les champs restants de la même manière */}
 
       <Button
         type="submit"
