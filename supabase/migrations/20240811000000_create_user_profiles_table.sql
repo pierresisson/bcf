@@ -7,7 +7,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Création de la table user_profiles
 CREATE TABLE user_profiles (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -29,11 +28,9 @@ CREATE TABLE user_profiles (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Trigger pour mettre à jour le champ updated_at automatiquement
 CREATE TRIGGER set_updated_at
 BEFORE UPDATE ON user_profiles
 FOR EACH ROW
 EXECUTE FUNCTION trigger_set_timestamp();
 
--- Index pour améliorer les performances des requêtes
 CREATE INDEX idx_user_profiles_user_id ON user_profiles(user_id);

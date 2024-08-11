@@ -8,52 +8,65 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 
 const userProfileSchema = z.object({
+  id: z.string().uuid().optional(),
+  user_id: z.string().uuid().optional(),
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
   age: z
     .number()
+    .int()
     .min(18, "Vous devez avoir au moins 18 ans")
     .max(120, "Âge invalide"),
   occupation: z
     .string()
     .min(2, "L'occupation doit contenir au moins 2 caractères"),
-  livingArrangement: z.enum(["Appartement", "Maison", "Colocation", "Autre"]),
-  familyStatus: z.enum([
+  living_arrangement: z.enum(["Appartement", "Maison", "Colocation", "Autre"]),
+  family_status: z.enum([
     "Célibataire",
     "En couple",
     "Marié(e)",
     "Avec enfants",
   ]),
-  wakeUpTime: z
+  wake_up_time: z
     .string()
     .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Format d'heure invalide"),
-  sleepTime: z
+  sleep_time: z
     .string()
     .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Format d'heure invalide"),
-  workHours: z.string(),
-  dietPreference: z.enum(["Omnivore", "Végétarien", "Végétalien", "Autre"]),
+  work_hours: z.string(),
+  diet_preference: z.enum(["Omnivore", "Végétarien", "Végétalien", "Autre"]),
   hobbies: z.string(),
-  sportsActivities: z.array(z.string()),
-  healthGoal: z.string(),
-  careerGoal: z.string(),
-  personalGoal: z.string(),
+  sports_activities: z.array(z.string()),
+  health_goal: z.string(),
+  career_goal: z.string(),
+  personal_goal: z.string(),
+  created_at: z.string().datetime().optional(),
+  updated_at: z.string().datetime().optional(),
 });
 
 type UserProfile = z.infer<typeof userProfileSchema>;
 
 export default function OnboardingForm() {
-  const mutation = useMutation<unknown, Error, UserProfile>({
+  const mutation = useMutation<UserProfile, Error, UserProfile>({
     mutationFn: async (data: UserProfile) => {
       const { data: result, error } = await supabase
         .from("user_profiles")
         .upsert({
           ...data,
           user_id: (await supabase.auth.getUser()).data.user?.id,
-        });
+        })
+        .select()
+        .single();
+
       if (error) throw error;
-      return result;
+
+      if (!result) {
+        throw new Error("No data returned from Supabase");
+      }
+
+      return result as UserProfile;
     },
     onSuccess: () => {
-      // Redirection ou notification de succès ici
+      // Handle success (e.g., redirect or show notification)
     },
   });
 
@@ -62,17 +75,17 @@ export default function OnboardingForm() {
       name: "",
       age: 18,
       occupation: "",
-      livingArrangement: "Appartement",
-      familyStatus: "Célibataire",
-      wakeUpTime: "",
-      sleepTime: "",
-      workHours: "",
-      dietPreference: "Omnivore",
+      living_arrangement: "Appartement",
+      family_status: "Célibataire",
+      wake_up_time: "",
+      sleep_time: "",
+      work_hours: "",
+      diet_preference: "Omnivore",
       hobbies: "",
-      sportsActivities: [],
-      healthGoal: "",
-      careerGoal: "",
-      personalGoal: "",
+      sports_activities: [],
+      health_goal: "",
+      career_goal: "",
+      personal_goal: "",
     },
     onSubmit: async (values) => {
       const validatedData = userProfileSchema.parse(values);
