@@ -5,12 +5,18 @@ import { supabase } from '@/lib/supabaseClient';
 import { useRouter } from 'next/navigation';
 import { useForm } from '@tanstack/react-form';
 import { useMutation } from '@tanstack/react-query';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Alert } from '@/components/ui/alert';
 
-type FormData = {
-  email: string;
-  password: string;
-};
+const formSchema = z.object({
+  email: z.string().email({ message: 'Invalid email address' }),
+  password: z
+    .string()
+    .min(6, { message: 'Password must be at least 6 characters long' }),
+});
+
+type FormData = z.infer<typeof formSchema>;
 
 type FormAction = 'login' | 'signup';
 
@@ -40,7 +46,9 @@ export default function LoginPage() {
     onSuccess: () => {
       router.push('/');
     },
-    onError: (error) => {},
+    onError: (error) => {
+      console.error('Login error:', error);
+    },
   });
 
   const signupMutation = useMutation({
@@ -83,7 +91,7 @@ export default function LoginPage() {
                     />
                     {field.state.meta.errors ? (
                       <span className="text-red-500">
-                        {field.state.meta.errors}
+                        {field.state.meta.errors.join(', ')}
                       </span>
                     ) : null}
                   </>
@@ -105,7 +113,7 @@ export default function LoginPage() {
                     />
                     {field.state.meta.errors ? (
                       <span className="text-red-500">
-                        {field.state.meta.errors}
+                        {field.state.meta.errors.join(', ')}
                       </span>
                     ) : null}
                   </>
