@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const router = useRouter(); // Utilisez le hook useRouter pour rediriger
+  const router = useRouter();
 
   const handleLogin = async () => {
     try {
