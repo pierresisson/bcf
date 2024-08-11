@@ -52,30 +52,6 @@ const userProfileSchema = z.object({
 type UserProfile = z.infer<typeof userProfileSchema>;
 
 export default function OnboardingForm() {
-  console.log('SUPABASE_URL:', process.env.SUPABASE_URL);
-  console.log('SUPABASE_ANON_KEY:', process.env.SUPABASE_ANON_KEY);
-  const mutation = useMutation<UserProfile[], Error, UserProfile>({
-    mutationFn: async (data: UserProfile) => {
-      const { data: result, error } = await supabase
-        .from('user_profiles')
-        .upsert({
-          ...data,
-          user_id: (await supabase.auth.getUser()).data.user?.id,
-        });
-
-      if (error) throw error;
-
-      if (!result) {
-        throw new Error('No data returned from Supabase');
-      }
-
-      return result[0];
-    },
-    onSuccess: () => {
-      // Handle success (e.g., redirect or show notification)
-    },
-  });
-
   const form = useForm<UserProfile>({
     defaultValues: {
       name: '',
@@ -93,9 +69,28 @@ export default function OnboardingForm() {
       careerGoal: '',
       personalGoal: '',
     },
-    onSubmit: async (values) => {
-      const validatedData = userProfileSchema.parse(values);
-      mutation.mutate(validatedData);
+  });
+
+  const mutation = useMutation({
+    mutationFn: async (data: UserProfile) => {
+      const { data: result, error } = await supabase
+        .from('user_profiles')
+        .upsert({
+          ...(data as object),
+          user_id: (await supabase.auth.getUser()).data.user?.id,
+        });
+
+      if (error) throw error;
+
+      if (!result) {
+        throw new Error('No data returned from Supabase');
+      }
+
+      return result[0];
+    },
+    onSuccess: () => {
+      console.log('Profile saved');
+      // Handle success
     },
   });
 
